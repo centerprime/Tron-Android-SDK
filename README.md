@@ -33,7 +33,7 @@ Maven:
 <dependency>
 	    <groupId>com.github.centerprime</groupId>
 	    <artifactId>Tron-Client-SDK</artifactId>
-	    <version>1.0.4</version>
+	    <version>1.0.6</version>
 </dependency>
 ```
 
@@ -41,7 +41,7 @@ Gradle:
 
 ```groovy
 dependencies {
-      implementation 'com.github.centerprime:Tron-Client-SDK:1.0.4'
+      implementation 'com.github.centerprime:Tron-Client-SDK:1.0.6'
 
 
 }
