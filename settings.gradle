@@ -1,0 +1,3 @@
+include ':tronsdk'
+include ':app'
+rootProject.name = "Tron Client Sdk"

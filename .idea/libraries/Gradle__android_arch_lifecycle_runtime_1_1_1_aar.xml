@@ -1,0 +1,16 @@
+<component name="libraryTable">
+  <library name="Gradle: android.arch.lifecycle:runtime:1.1.1@aar">
+    <CLASSES>
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/de9e079fd7abd03661d7b43e15b21fad/runtime-1.1.1/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/1f526e5a1d1b3295679bc0dc78e8641e/runtime-1.1.1/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/896323c247c811b6d43144f3dbd9aaa4/runtime-1.1.1/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/9054ae453dba8f7c1f492a119c7360e7/runtime-1.1.1/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/de9e079fd7abd03661d7b43e15b21fad/runtime-1.1.1/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/de9e079fd7abd03661d7b43e15b21fad/runtime-1.1.1/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/android.arch.lifecycle/runtime/1.1.1/8e4214221b3797b863dc9998d16abb4af043e784/runtime-1.1.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
