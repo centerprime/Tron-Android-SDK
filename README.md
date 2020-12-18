@@ -107,6 +107,8 @@ tronWalletManager.createWallet("12345", this)
 ```java
 TronWalletManager tronWalletManager = TronWalletManager.getInstance();
 tronWalletManager.init(this);
+String password = "xxxx12345";
+String keystore = "JSON_FORMAT";
 tronWalletManager.importFromKeystore(password, keystore, this)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
