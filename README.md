@@ -130,7 +130,7 @@ tronWalletManager.importFromKeystore(password, keystore, this)
 TronWalletManager tronWalletManager = TronWalletManager.getInstance();
 tronWalletManager.init(this);
 String walletAddress = "WALLET_ADDRESS";
-tronWalletManager.getQKCBalance(walletAddress,this)
+tronWalletManager.getTRXBalance(walletAddress,this)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(balance -> {
