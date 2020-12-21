@@ -212,7 +212,7 @@ public class TronWalletManager {
                 System.out.println("Receive txid = " + txId);
 
                 HashMap<String, Object> body = new HashMap<>();
-                body.put("action_type", "SEND_ETHER");
+                body.put("action_type", "SEND_TRX");
                 body.put("from_wallet_address", sender);
                 body.put("to_wallet_address", receiver);
                 body.put("amount", amount.doubleValue());
