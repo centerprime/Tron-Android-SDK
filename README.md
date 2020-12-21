@@ -33,7 +33,7 @@ Maven:
 <dependency>
 	    <groupId>com.github.centerprime</groupId>
 	    <artifactId>Tron-Client-SDK</artifactId>
-	    <version>1.0.4</version>
+	    <version>1.0.6</version>
 </dependency>
 ```
 
@@ -41,7 +41,7 @@ Gradle:
 
 ```groovy
 dependencies {
-      implementation 'com.github.centerprime:Tron-Client-SDK:1.0.4'
+      implementation 'com.github.centerprime:Tron-Client-SDK:1.0.6'
 
 
 }
@@ -107,6 +107,8 @@ tronWalletManager.createWallet("12345", this)
 ```java
 TronWalletManager tronWalletManager = TronWalletManager.getInstance();
 tronWalletManager.init(this);
+String password = "xxxx12345";
+String keystore = "JSON_FORMAT";
 tronWalletManager.importFromKeystore(password, keystore, this)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -128,7 +130,7 @@ tronWalletManager.importFromKeystore(password, keystore, this)
 TronWalletManager tronWalletManager = TronWalletManager.getInstance();
 tronWalletManager.init(this);
 String walletAddress = "WALLET_ADDRESS";
-tronWalletManager.getQKCBalance(walletAddress,this)
+tronWalletManager.getTRXBalance(walletAddress,this)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(balance -> {
