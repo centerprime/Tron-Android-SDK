@@ -1,4 +1,4 @@
-# Tron-Client-SDK
+# Tron Android SDK
 
 
 ## Table of Contents
