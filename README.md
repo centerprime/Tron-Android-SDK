@@ -9,6 +9,7 @@
 - [Features at a Glance](#features-at-a-glance)
   - [Create Wallet](#create-wallet)
   - [Import Wallet By Keystore](#import-wallet-by-keystore)
+  - [Export Keystore](#export-keystore)
   - [TRX Balance](#trx-balance)
   - [TRX20 Balance](#trx20-balance)
   - [Send TRX](#send-trx)
@@ -120,7 +121,24 @@ tronWalletManager.importFromKeystore(password, keystore, this)
 
                 });
 ```
+### Export Keystore
 
+> If you want to export wallet address’s keystore you can use a code written below.
+
+```java
+TronWalletManager tronWalletManager = TronWalletManager.getInstance();
+String walletAddress = "WALLET_ADDRESS";
+tronWalletManager.getKeyStore(walletAddress, this)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(keystore -> {
+
+                    Toast.makeText(this, "Keystore : " + keystore, Toast.LENGTH_SHORT).show();
+
+                }, error -> {
+
+                });
+```
 
 ### TRX Balance
 
