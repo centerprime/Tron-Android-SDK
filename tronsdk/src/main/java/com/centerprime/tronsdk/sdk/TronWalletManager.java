@@ -403,10 +403,10 @@ public class TronWalletManager {
             String privatekey = (bytesToHex(priKey));
             //trx20
 //            long tokenAmount = (long) (13 * Math.pow(10, 18));
-            String transferParams = toAddress + "," + amount;
+            String transferParams = toAddress + "," + big2.stripTrailingZeros().toPlainString();
 
             String[] parameters = new String[]{contractAddress,
-                    "transfer(address,uint256)", transferParams, "false", "100000000", "0"};
+                    "transfer(address,uint256)", transferParams, "false", "10000000", "0"};
             GrpcAPI.TransactionExtention transactionExtention = null;
             try {
                 transactionExtention = walletApi.triggerContract(parameters, decodeFromBase58Check(sender));
@@ -449,7 +449,7 @@ public class TronWalletManager {
                 body.put("token_symbol" , "tokenSymbol");
 
                 body.put("status", "SUCCESS");
-                sendEventToLedger(body, context);
+//                sendEventToLedger(body, context);
 
                 return txHash;
             }

@@ -3,13 +3,10 @@ package com.centerprime.tronclientsdk;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
-import com.centerprime.tronsdk.protos.Protocol;
 import com.centerprime.tronsdk.sdk.TronWalletManager;
-import com.centerprime.tronsdk.walletserver.WalletApi;
 
 import java.math.BigDecimal;
 
-import io.reactivex.Completable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
@@ -156,20 +153,24 @@ public class MainActivity extends AppCompatActivity {
         TronWalletManager tronWalletManager = TronWalletManager.getInstance();
         tronWalletManager.init(this);
 
-        tronWalletManager.createWallet("12345",this)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(wallet -> {
-                });
-
-//        tronWalletManager.sentTRX20(this,"TQjv4nR1Ezr7dKVyQALQvE5PpcwyRHCvyC","12345","TWfutLiMn46exyG9bxhtST4QGw4nxMSmop","TKFVm3segGn4bQjdGiiEMvXU73njx4K8go",new BigDecimal(10))
+//        tronWalletManager.createWallet("12345",this)
 //                .subscribeOn(Schedulers.io())
 //                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe(result ->{
-//                    System.out.println(result);
-//                }, error ->{
-//                   error.printStackTrace();
+//                .subscribe(wallet -> {
+//                    System.out.println(wallet);
 //                });
+// TGVwk4BEM6LndaPJqBiaPsn3PPPa2ysPT8
+        tronWalletManager.sentTRX20("TGVwk4BEM6LndaPJqBiaPsn3PPPa2ysPT8",
+                "12345", "TWfutLiMn46exyG9bxhtST4QGw4nxMSmop",
+                "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
+                new BigDecimal(0.003), this)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                    System.out.println(result);
+                }, error -> {
+                    error.printStackTrace();
+                });
 
 
 //        tronWalletManager.getTrc20Balance("TQjv4nR1Ezr7dKVyQALQvE5PpcwyRHCvyC","TKFVm3segGn4bQjdGiiEMvXU73njx4K8go")

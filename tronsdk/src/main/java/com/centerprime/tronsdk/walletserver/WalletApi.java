@@ -77,10 +77,8 @@ public class WalletApi {
   public static GrpcClient rpcCli;
 
   public static void reloadClient(Context context) {
-    String fullNode = "";
-    String solidityNode = "";
-    fullNode =  "grpc.trongrid.io:50051";
-    solidityNode = "grpc.trongrid.io:50052";
+    String fullNode =  "grpc.trongrid.io:50051"; // "grpc.shasta.trongrid.io.50051" testnet
+    String solidityNode = "grpc.trongrid.io:50052";// "grpc.shasta.trongrid.io.50052" testnet
     WalletApi.setAddressPreFixByte(CommonConstant.ADD_PRE_FIX_BYTE_MAINNET);
     rpcVersion = 2;
     rpcCli = new GrpcClient(fullNode, solidityNode);
