@@ -11,8 +11,9 @@
   - [Import Wallet By Keystore](#import-wallet-by-keystore)
   - [Export Keystore](#export-keystore)
   - [TRX Balance](#trx-balance)
-  - [TRX20 Balance](#trx20-balance)
+  - [TRC20 Balance](#trc20-balance)
   - [Send TRX](#send-trx)
+  - [Send TRC20 Token](#send-trc20-token)
 
 ## Getting Started
 
@@ -34,7 +35,7 @@ Maven:
 <dependency>
 	    <groupId>com.github.centerprime</groupId>
 	    <artifactId>Tron-Client-SDK</artifactId>
-	    <version>1.0.6</version>
+	    <version>1.0.7</version>
 </dependency>
 ```
 
@@ -42,7 +43,7 @@ Gradle:
 
 ```groovy
 dependencies {
-      implementation 'com.github.centerprime:Tron-Client-SDK:1.0.6'
+      implementation 'com.github.centerprime:Tron-Client-SDK:1.0.7'
 
 
 }
@@ -161,9 +162,9 @@ tronWalletManager.getTRXBalance(walletAddress,this)
 ```
 
 
-### TRX20 Balance
+### TRC20 Balance
 
-> TRX20 Balance.
+> TRC20 Balance.
 
 ```java
 TronWalletManager tronWalletManager = TronWalletManager.getInstance();
@@ -207,4 +208,27 @@ qkcManager.sendTRX(Context context, String sender, String password, String recei
 
                 });
 ```
+### Send TRC20 Token
 
+> Send TRC20 Token.
+
+```java
+TronWalletManager tronWalletManager = TronWalletManager.getInstance();
+        tronWalletManager.init(this);
+        String sender = "SENDER_WALLET_ADDRESS";
+        String sender_password = "SENDER_WALLET_PASSWORD";
+        String receiver = "RECEIVER_WALLET_ADDRESS";
+        String contractAddress = "TOKEN_CONTRACT_ADDRESS";
+        BigDecimal tokenAmount = new BigDecimal("");
+        tronWalletManager.sentTRX20(sender,
+                sender_password, receiver,
+                contractAddress,
+                tokenAmount, this)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                    System.out.println(result);
+                }, error -> {
+                    error.printStackTrace();
+                });
+```
