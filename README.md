@@ -11,8 +11,9 @@
   - [Import Wallet By Keystore](#import-wallet-by-keystore)
   - [Export Keystore](#export-keystore)
   - [TRX Balance](#trx-balance)
-  - [TRX20 Balance](#trx20-balance)
+  - [TRC20 Balance](#trc20-balance)
   - [Send TRX](#send-trx)
+  - [Send TRC20 Token](#send-trc20-token)
 
 ## Getting Started
 
@@ -34,7 +35,7 @@ Maven:
 <dependency>
 	    <groupId>com.github.centerprime</groupId>
 	    <artifactId>Tron-Client-SDK</artifactId>
-	    <version>1.0.6</version>
+	    <version>1.0.7</version>
 </dependency>
 ```
 
@@ -42,7 +43,7 @@ Gradle:
 
 ```groovy
 dependencies {
-      implementation 'com.github.centerprime:Tron-Client-SDK:1.0.6'
+      implementation 'com.github.centerprime:Tron-Client-SDK:1.0.7'
 
 
 }
