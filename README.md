@@ -161,9 +161,9 @@ tronWalletManager.getTRXBalance(walletAddress,this)
 ```
 
 
-### TRX20 Balance
+### TRC20 Balance
 
-> TRX20 Balance.
+> TRC20 Balance.
 
 ```java
 TronWalletManager tronWalletManager = TronWalletManager.getInstance();
@@ -207,4 +207,27 @@ qkcManager.sendTRX(Context context, String sender, String password, String recei
 
                 });
 ```
+### Send TRC20 Token
 
+> Send TRC20 Token.
+
+```java
+TronWalletManager tronWalletManager = TronWalletManager.getInstance();
+        tronWalletManager.init(this);
+        String sender = "SENDER_WALLET_ADDRESS";
+        String sender_password = "SENDER_WALLET_PASSWORD";
+        String receiver = "RECEIVER_WALLET_ADDRESS";
+        String contractAddress = "TOKEN_CONTRACT_ADDRESS";
+        BigDecimal tokenAmount = new BigDecimal("");
+        tronWalletManager.sentTRX20(sender,
+                sender_password, receiver,
+                contractAddress,
+                tokenAmount, this)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(result -> {
+                    System.out.println(result);
+                }, error -> {
+                    error.printStackTrace();
+                });
+```
