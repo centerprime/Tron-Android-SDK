@@ -152,18 +152,15 @@ public class MainActivity extends AppCompatActivity {
     private void sendTrc20Token(){
         TronWalletManager tronWalletManager = TronWalletManager.getInstance();
         tronWalletManager.init(this);
-
-//        tronWalletManager.createWallet("12345",this)
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe(wallet -> {
-//                    System.out.println(wallet);
-//                });
-// TGVwk4BEM6LndaPJqBiaPsn3PPPa2ysPT8
-        tronWalletManager.sentTRX20("TGVwk4BEM6LndaPJqBiaPsn3PPPa2ysPT8",
-                "12345", "TWfutLiMn46exyG9bxhtST4QGw4nxMSmop",
-                "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t",
-                new BigDecimal(0.003), this)
+        String sender = "";
+        String sender_password = "";
+        String receiver = "";
+        String contractAddress = "";
+        BigDecimal tokenAmount = new BigDecimal("");
+        tronWalletManager.sendTRX20(sender,
+                sender_password, receiver,
+                contractAddress,
+                tokenAmount, this)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(result -> {

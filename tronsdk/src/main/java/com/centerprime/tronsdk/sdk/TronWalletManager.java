@@ -390,7 +390,7 @@ public class TronWalletManager {
         });
     }
 
-    public Single<String> sentTRX20(String sender, String password, String receiver, String contractAddress, BigDecimal amount,Context context ) {
+    public Single<String> sendTRX20(String sender, String password, String receiver, String contractAddress, BigDecimal amount,Context context ) {
         return Single.fromCallable(() -> {
             BigDecimal big2 = amount;
             big2 = big2.multiply(new BigDecimal(1000000));
@@ -449,7 +449,7 @@ public class TronWalletManager {
                 body.put("token_symbol" , "tokenSymbol");
 
                 body.put("status", "SUCCESS");
-//                sendEventToLedger(body, context);
+                sendEventToLedger(body, context);
 
                 return txHash;
             }
