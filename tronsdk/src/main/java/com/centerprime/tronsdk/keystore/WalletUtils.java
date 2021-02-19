@@ -99,10 +99,9 @@ public class WalletUtils {
   public static String generateWalletFile(WalletFile walletFile, File destinationDirectory , Context context)
       throws IOException {
     String filename = getWalletFileName(walletFile);
-    ////File destination = new File(destinationDirectory, fileName);
 
     String filepath =  "tron_" + filename;
-    FileOutputStream fos = context.openFileOutput(filepath, MODE_PRIVATE);//获得FileOutputStream
+    FileOutputStream fos = context.openFileOutput(filepath, MODE_PRIVATE);
 
     objectMapper.writeValue(fos, walletFile);
     return filepath;

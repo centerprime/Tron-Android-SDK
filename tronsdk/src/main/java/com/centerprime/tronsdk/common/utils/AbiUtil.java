@@ -1,16 +1,18 @@
 package com.centerprime.tronsdk.common.utils;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.spongycastle.util.encoders.EncoderException;
-import org.spongycastle.util.encoders.Hex;
 import com.centerprime.tronsdk.common.crypto.Hash;
 import com.centerprime.tronsdk.core.exception.EncodingException;
 import com.centerprime.tronsdk.walletserver.WalletApi;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.spongycastle.util.encoders.Hex;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class AbiUtil {
 
@@ -130,7 +132,7 @@ public class AbiUtil {
 
     @Override
     byte[] encode(String value) {
-      long n = Long.valueOf(value);
+      long n = new BigDecimal(value).longValue();
       DataWord word = new DataWord(Math.abs(n));
       if (n < 0) {
         word.negate();
@@ -284,7 +286,7 @@ public class AbiUtil {
 
     List<byte[]> encodedList = new ArrayList<>();
 
-    for (int idx = 0;idx < codes.size();  idx++) {
+    for (int idx = 0; idx < codes.size(); idx++) {
       Coder coder = codes.get(idx);
       String value = values.get(idx).toString();
 
@@ -309,13 +311,13 @@ public class AbiUtil {
       Coder coder = codes.get(idx);
 
       if (coder.dynamic) {
-        System.arraycopy(new DataWord(dynamicOffset).getData(), 0,data, offset, 32);
+        System.arraycopy(new DataWord(dynamicOffset).getData(), 0, data, offset, 32);
         offset += 32;
 
-        System.arraycopy(encodedList.get(idx), 0,data, dynamicOffset, encodedList.get(idx).length );
+        System.arraycopy(encodedList.get(idx), 0, data, dynamicOffset, encodedList.get(idx).length);
         dynamicOffset += encodedList.get(idx).length;
       } else {
-        System.arraycopy(encodedList.get(idx), 0,data, offset, encodedList.get(idx).length);
+        System.arraycopy(encodedList.get(idx), 0, data, offset, encodedList.get(idx).length);
         offset += encodedList.get(idx).length;
       }
     }
@@ -328,10 +330,9 @@ public class AbiUtil {
   }
 
   public static String parseMethod(String methodSign, String input, boolean isHex)
-      throws EncodingException {
+          throws EncodingException {
     byte[] selector = new byte[4];
-    System.arraycopy(Hash.sha3(methodSign.getBytes()), 0, selector,0, 4);
-    System.out.println(methodSign + ":" + Hex.toHexString(selector));
+    System.arraycopy(Hash.sha3(methodSign.getBytes()), 0, selector, 0, 4);
     if (input.length() == 0) {
       return Hex.toHexString(selector);
     }
@@ -344,17 +345,24 @@ public class AbiUtil {
   }
 
   public static byte[] encodeInput(String methodSign, String input) throws EncodingException {
-    ObjectMapper mapper = new ObjectMapper();
-    input = "[" + input + "]";
-    List<Object> items = null;
+
+    List<Object> items = new ArrayList<>();
     try {
-      items = mapper.readValue(input, List.class);
-    } catch (IOException e) {
+      if (input.contains(",")) {
+        String[] split = input.split(",");
+        for (String s : split) {
+          items.add(s);
+        }
+      } else {
+        items.add(input);
+      }
+
+    } catch (Exception e) {
       e.printStackTrace();
     }
 
     List<Coder> coders = new ArrayList<>();
-    for (String s: getTypes(methodSign)) {
+    for (String s : getTypes(methodSign)) {
       Coder c = getParamCoder(s);
       coders.add(c);
     }

@@ -20,9 +20,12 @@ import com.centerprime.tronsdk.common.crypto.ECKey;
 import com.centerprime.tronsdk.common.crypto.Sha256Hash;
 import com.centerprime.tronsdk.common.utils.AbiUtil;
 import com.centerprime.tronsdk.common.utils.ByteArray;
+import com.centerprime.tronsdk.common.utils.Hex2Decimal;
+import com.centerprime.tronsdk.common.utils.StringTronUtil;
 import com.centerprime.tronsdk.common.utils.TransactionUtils;
 import com.centerprime.tronsdk.core.exception.CancelException;
 import com.centerprime.tronsdk.core.exception.CipherException;
+import com.centerprime.tronsdk.core.exception.EncodingException;
 import com.centerprime.tronsdk.keystore.StringUtils;
 import com.centerprime.tronsdk.protos.Contract;
 import com.centerprime.tronsdk.protos.Contract.AssetIssueContract;
@@ -46,17 +49,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
-
 public class WalletApiWrapper {
 
-  //private static final Logger logger = LoggerFactory.getLogger("WalletApiWrapper");
   public WalletApi wallet;
   public Context context;
 
   public ECKey ecKey = null;
 
+  private static String TRANSFER_METHOD = "transfer(address,uint256)";
 
   public String registerWallet(char[] password, Context context)
           throws CipherException, IOException
@@ -64,19 +64,11 @@ public class WalletApiWrapper {
     if (!WalletApi.passwordValid(password)) {
       return null;
     }
-
     byte[] passwd = StringUtils.char2Byte(password);
-
     wallet = new WalletApi(passwd);
     wallet.setLogin();
-
-    String address = getAddress();
-
     StringUtils.clear(passwd);
-
-    String keystoreName = wallet.store2Keystore("",context);
-
-    return keystoreName;
+    return wallet.store2Keystore("", context);
   }
 
   public String importWallet(char[] password, byte[] priKey) throws CipherException, IOException {
@@ -86,34 +78,11 @@ public class WalletApiWrapper {
     if (!WalletApi.priKeyValid(priKey)) {
       return null;
     }
-
     byte[] passwd = StringUtils.char2Byte(password);
-
     wallet = new WalletApi(passwd, priKey);
     wallet.setLogin();
     StringUtils.clear(passwd);
-
-    String keystoreName = wallet.store2Keystore("", context);
-    //logout();
-    return keystoreName;
-  }
-
-  public boolean changePassword(char[] oldPassword, char[] newPassword, String keystore, Context c)
-      throws IOException, CipherException {
-    logout();
-    if (!WalletApi.passwordValid(newPassword)) {
-      Log.d("tag", "Warning: ChangePassword failed, NewPassword is invalid !!");
-      return false;
-    }
-
-    byte[] oldPasswd = StringUtils.char2Byte(oldPassword);
-    byte[] newPasswd = StringUtils.char2Byte(newPassword);
-
-    boolean result = WalletApi.changeKeystorePassword(oldPasswd, newPasswd, keystore, c);
-    StringUtils.clear(oldPasswd);
-    StringUtils.clear(newPasswd);
-
-    return result;
+    return wallet.getAddress().toString();
   }
 
   public boolean loginAndroid(char[] password, String keystoreName, Context c) throws IOException, CipherException {
@@ -152,7 +121,6 @@ public class WalletApiWrapper {
       wallet.logout();
       wallet = null;
     }
-    //Neddn't logout
   }
 
   //password is current, will be enc by password2.
@@ -193,6 +161,10 @@ public class WalletApiWrapper {
     }
 
     return wallet.queryAccount();
+  }
+
+  public GrpcAPI.AccountNetMessage getAccount(byte[] addressBytes){
+    return wallet.getAccount(addressBytes);
   }
 
   public boolean sendCoin(String toAddress, long amount)
@@ -366,75 +338,12 @@ public class WalletApiWrapper {
     return wallet.voteWitness(witness);
   }
 
-  public Optional<WitnessList> listWitnesses() {
-    try {
-      return WalletApi.listWitnesses();
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      return Optional.empty();
-    }
-  }
-
-  public Optional<AssetIssueList> getAssetIssueList() {
-    try {
-      return WalletApi.getAssetIssueList();
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      return Optional.empty();
-    }
-  }
-
-  public Optional<AssetIssueList> getAssetIssueList(long offset, long limit) {
-    try {
-      return WalletApi.getAssetIssueList(offset, limit);
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      return Optional.empty();
-    }
-  }
-
   public AssetIssueContract getAssetIssueByName(String assetName) {
     return WalletApi.getAssetIssueByName(assetName);
   }
 
-  public Optional<AssetIssueList> getAssetIssueListByName(String assetName) {
-    try {
-      return WalletApi.getAssetIssueListByName(assetName);
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      return Optional.empty();
-    }
-  }
-
   public AssetIssueContract getAssetIssueById(String assetId) {
     return WalletApi.getAssetIssueById(assetId);
-  }
-
-  public Optional<ProposalList> getProposalListPaginated(long offset, long limit) {
-    try {
-      return WalletApi.getProposalListPaginated(offset, limit);
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      return Optional.empty();
-    }
-  }
-
-  public Optional<ExchangeList> getExchangeListPaginated(long offset, long limit) {
-    try {
-      return WalletApi.getExchangeListPaginated(offset, limit);
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      return Optional.empty();
-    }
-  }
-
-  public Optional<NodeList> listNodes() {
-    try {
-      return WalletApi.listNodes();
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      return Optional.empty();
-    }
   }
 
   public GrpcAPI.NumberMessage getTotalTransaction() {
@@ -463,202 +372,6 @@ public class WalletApiWrapper {
     }
 
     return wallet.setAccountId(accountIdBytes);
-  }
-
-  public boolean updateAsset(byte[] description, byte[] url, long newLimit,
-      long newPublicLimit) throws CipherException, IOException, CancelException {
-    if (wallet == null || !wallet.isLoginState()) {
-      Log.d("tag", "Warning: updateAsset failed, Please login first !!");
-      return false;
-    }
-
-    return wallet.updateAsset(description, url, newLimit, newPublicLimit);
-  }
-
-  public boolean freezeBalance(long frozen_balance, long frozen_duration, int resourceCode,
-      String receiverAddress)
-      throws CipherException, IOException, CancelException {
-    if (wallet == null || !wallet.isLoginState()) {
-      Log.d("tag", "Warning: freezeBalance failed, Please login first !!");
-      return false;
-    }
-
-    return wallet.freezeBalance(frozen_balance, frozen_duration, resourceCode, receiverAddress);
-  }
-
-  public boolean buyStorage(long quantity)
-      throws CipherException, IOException, CancelException {
-    if (wallet == null || !wallet.isLoginState()) {
-      Log.d("tag", "Warning: buyStorage failed, Please login first !!");
-      return false;
-    }
-
-    return wallet.buyStorage(quantity);
-  }
-
-  public boolean buyStorageBytes(long bytes)
-      throws CipherException, IOException, CancelException {
-    if (wallet == null || !wallet.isLoginState()) {
-      Log.d("tag", "Warning: buyStorageBytes failed, Please login first !!");
-      return false;
-    }
-
-    return wallet.buyStorageBytes(bytes);
-  }
-
-  public boolean sellStorage(long storageBytes)
-      throws CipherException, IOException, CancelException {
-    if (wallet == null || !wallet.isLoginState()) {
-      Log.d("tag", "Warning: sellStorage failed, Please login first !!");
-      return false;
-    }
-
-    return wallet.sellStorage(storageBytes);
-  }
-
-  public boolean unfreezeBalance(int resourceCode, String receiverAddress)
-      throws CipherException, IOException, CancelException {
-    if (wallet == null || !wallet.isLoginState()) {
-      Log.d("tag", "Warning: unfreezeBalance failed, Please login first !!");
-      return false;
-    }
-
-    return wallet.unfreezeBalance(resourceCode, receiverAddress);
-  }
-
-  public boolean unfreezeAsset() throws CipherException, IOException, CancelException {
-    if (wallet == null || !wallet.isLoginState()) {
-      Log.d("tag", "Warning: unfreezeAsset failed, Please login first !!");
-      return false;
-    }
-
-    return wallet.unfreezeAsset();
-  }
-
-  public boolean withdrawBalance() throws CipherException, IOException, CancelException {
-    if (wallet == null || !wallet.isLoginState()) {
-      Log.d("tag", "Warning: withdrawBalance failed, Please login first !!");
-      return false;
-    }
-
-    return wallet.withdrawBalance();
-  }
-
-  public boolean createProposal(HashMap<Long, Long> parametersMap)
-      throws CipherException, IOException, CancelException {
-    if (wallet == null || !wallet.isLoginState()) {
-      Log.d("tag", "Warning: createProposal failed, Please login first !!");
-      return false;
-    }
-
-    return wallet.createProposal(parametersMap);
-  }
-
-  public Optional<ProposalList> getProposalsList() {
-    try {
-      return WalletApi.listProposals();
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      return Optional.empty();
-    }
-  }
-
-  public Optional<Proposal> getProposals(String id) {
-    try {
-      return WalletApi.getProposal(id);
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      return Optional.empty();
-    }
-  }
-
-  public Optional<ExchangeList> getExchangeList() {
-    try {
-      return WalletApi.listExchanges();
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      return Optional.empty();
-    }
-  }
-
-  public Optional<Exchange> getExchange(String id) {
-    try {
-      return WalletApi.getExchange(id);
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      return Optional.empty();
-    }
-  }
-
-  public Optional<ChainParameters> getChainParameters() {
-    try {
-      return WalletApi.getChainParameters();
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      return Optional.empty();
-    }
-  }
-
-  public boolean approveProposal(long id, boolean is_add_approval)
-      throws CipherException, IOException, CancelException {
-    if (wallet == null || !wallet.isLoginState()) {
-      Log.d("tag", "Warning: approveProposal failed, Please login first !!");
-      return false;
-    }
-
-    return wallet.approveProposal(id, is_add_approval);
-  }
-
-  public boolean deleteProposal(long id)
-      throws CipherException, IOException, CancelException {
-    if (wallet == null || !wallet.isLoginState()) {
-      Log.d("tag", "Warning: deleteProposal failed, Please login first !!");
-      return false;
-    }
-
-    return wallet.deleteProposal(id);
-  }
-
-  public boolean exchangeCreate(byte[] firstTokenId, long firstTokenBalance,
-      byte[] secondTokenId, long secondTokenBalance)
-      throws CipherException, IOException, CancelException {
-    if (wallet == null || !wallet.isLoginState()) {
-      Log.d("tag", "Warning: exchangeCreate failed, Please login first !!");
-      return false;
-    }
-
-    return wallet.exchangeCreate(firstTokenId, firstTokenBalance,
-        secondTokenId, secondTokenBalance);
-  }
-
-  public boolean exchangeInject(long exchangeId, byte[] tokenId, long quant)
-      throws CipherException, IOException, CancelException {
-    if (wallet == null || !wallet.isLoginState()) {
-      Log.d("tag", "Warning: exchangeInject failed, Please login first !!");
-      return false;
-    }
-
-    return wallet.exchangeInject(exchangeId, tokenId, quant);
-  }
-
-  public boolean exchangeWithdraw(long exchangeId, byte[] tokenId, long quant)
-      throws CipherException, IOException, CancelException {
-    if (wallet == null || !wallet.isLoginState()) {
-      Log.d("tag", "Warning: exchangeWithdraw failed, Please login first !!");
-      return false;
-    }
-
-    return wallet.exchangeWithdraw(exchangeId, tokenId, quant);
-  }
-
-  public boolean exchangeTransaction(long exchangeId, byte[] tokenId, long quant, long expected)
-      throws CipherException, IOException, CancelException {
-    if (wallet == null || !wallet.isLoginState()) {
-      Log.d("tag", "Warning: exchangeTransaction failed, Please login first !!");
-      return false;
-    }
-
-    return wallet.exchangeTransaction(exchangeId, tokenId, quant, expected);
   }
 
   public boolean updateSetting(byte[] contractAddress, long consumeUserResourcePercent)
@@ -714,45 +427,10 @@ public class WalletApiWrapper {
     return getContract(address).getAbi();
   }
 
-  public String triggerContract(String contractAddress, String functionName, String functionParams) {
+  public String triggerContract(String walletAddress, String contractAddress, String functionName, String functionParams) {
     try {
-      Map<String, String> signedMethods = new HashMap<>();
-      Map<String, Function> functionMap = new HashMap<>();
-      Protocol.SmartContract.ABI abi = getContractABI(contractAddress);
-
-      for (Protocol.SmartContract.ABI.Entry entry : abi.getEntrysList()) {
-        String name = entry.getName();
-        StringBuilder methodStr = new StringBuilder(name);
-        methodStr.append("(");
-        if (entry.getInputsList() != null && entry.getInputsList().size() > 0) {
-          for (int j = 0; j < entry.getInputsList().size(); j++) {
-            Protocol.SmartContract.ABI.Entry.Param param = entry.getInputsList().get(j);
-            String inputName = param.getName();
-            String type = param.getType();
-            methodStr.append(type);
-            if (j != entry.getInputsList().size() - 1) {
-              methodStr.append(",");
-            }
-          }
-        }
-        methodStr.append(")");
-        signedMethods.put(name, methodStr.toString());
-
-        List<Protocol.SmartContract.ABI.Entry.Param> outputList = entry.getOutputsList();
-        List<TypeReference<?>> outputParaList = new ArrayList<>();
-        if (outputList != null && outputList.size() > 0) {
-          for (int j = 0; j < outputList.size(); j++) {
-            String type = outputList.get(j).getType();
-            outputParaList.add(AbiTypes.getTypeReference(type, false));
-          }
-        }
-        Function functionForReturn = new Function(entry.getName(),
-                Collections.emptyList(), outputParaList);
-        functionMap.put(name, functionForReturn);
-      }
-
-      byte[] data = Hex.decode(AbiUtil.parseMethod(signedMethods.get(functionName), functionParams, false));
-      byte[] owner = wallet.getAddress();
+      byte[] data = Hex.decode(AbiUtil.parseMethod(functionName, functionParams, false));
+      byte[] owner = walletAddress.getBytes();
       byte[] contractAddressBytes = WalletApi.decodeFromBase58Check(contractAddress);
 
       Contract.TriggerSmartContract triggerSmartContract = Contract.TriggerSmartContract.newBuilder()
@@ -766,63 +444,16 @@ public class WalletApiWrapper {
         return "";
       }
 
-      String transactionId;
-      if (transactionExtention.getConstantResultCount() > 0) {
+      Protocol.Transaction resultTransaction = transactionExtention.getTransaction();
+
+      if (resultTransaction.getRetCount() != 0 &&
+              transactionExtention.getConstantResult(0) != null &&
+              transactionExtention.getResult() != null) {
         byte[] result = transactionExtention.getConstantResult(0).toByteArray();
-        System.out.println("message:" + transactionExtention.getTransaction().getRet(0).getRet());
-        System.out.println(":" + ByteArray.toStr(transactionExtention.getResult().getMessage().toByteArray()));
-        transactionId = Hex.toHexString(transactionExtention.getTxid().toByteArray());
-        StringBuilder rawBuilder = new StringBuilder();
-        transactionExtention.getConstantResultList().forEach(r -> {
-          rawBuilder.append(Hex.toHexString(r.toByteArray()));
-        });
-        Function function = functionMap.get(functionName);
-        List<com.centerprime.tronsdk.abi.datatypes.Type> output = null;
-        StringBuilder outputBuilder = new StringBuilder();
-        if (function != null) {
-          output = FunctionReturnDecoder.decode(rawBuilder.toString(), function.getOutputParameters());
-          for (int i = 0; i < output.size(); i++) {
-            if (output.get(i) instanceof Address) {
-              String hexTronAddress = ((Address) output.get(i)).toUint160().getValue()
-                      .or(new BigInteger("410000000000000000000000000000000000000000", 16))
-                      .toString(16);
-              outputBuilder.append(WalletApi.encode58Check(Hex.decode(hexTronAddress)));
-            } else {
-              outputBuilder.append(output.get(i).getValue());
-            }
-            if (i != output.size() - 1) {
-              outputBuilder.append(",");
-            }
-          }
-        }
-        System.out.println("transaction_id:" + transactionId);
-        System.out.println("contract_result:" + (function == null ? rawBuilder.toString() : outputBuilder.toString()));
-        return transactionId;
+        long balance = Hex2Decimal.hex2Decimal(org.spongycastle.util.encoders.Hex.toHexString(result));
+        System.out.println(balance);
       }
-
-      GrpcAPI.TransactionExtention.Builder texBuilder = GrpcAPI.TransactionExtention.newBuilder();
-      Protocol.Transaction.Builder transBuilder = Protocol.Transaction.newBuilder();
-      Protocol.Transaction.raw.Builder rawBuilder = transactionExtention.getTransaction().getRawData()
-              .toBuilder();
-      rawBuilder.setFeeLimit(100 * 1000000l);
-      transBuilder.setRawData(rawBuilder);
-      for (int i = 0; i < transactionExtention.getTransaction().getSignatureCount(); i++) {
-        ByteString s = transactionExtention.getTransaction().getSignature(i);
-        transBuilder.setSignature(i, s);
-      }
-      for (int i = 0; i < transactionExtention.getTransaction().getRetCount(); i++) {
-        Protocol.Transaction.Result r = transactionExtention.getTransaction().getRet(i);
-        transBuilder.setRet(i, r);
-      }
-      texBuilder.setTransaction(transBuilder);
-      texBuilder.setResult(transactionExtention.getResult());
-      texBuilder.setTxid(transactionExtention.getTxid());
-      transactionExtention = texBuilder.build();
-
-      processTransactionExtention(transactionExtention);
-
-
-      transactionId = Hex.toHexString(Sha256Hash.of(transactionExtention.getTransaction().getRawData().toByteArray()).getBytes());
+      String transactionId = Hex.toHexString(Sha256Hash.of(transactionExtention.getTransaction().getRawData().toByteArray()).getBytes());
       return transactionId;
 
 
@@ -831,6 +462,88 @@ public class WalletApiWrapper {
     }
 
     return "";
+  }
+
+  public static GrpcAPI.TransactionExtention triggerContract(String[] parameters, byte[] ower)
+          throws IOException, CipherException, CancelException, EncodingException {
+    if (parameters == null ||
+            parameters.length < 6) {
+      System.out.println("TriggerContract needs 6 parameters like following: ");
+      System.out.println(
+              "TriggerContract contractAddress method args isHex fee_limit value");
+      return null;
+    }
+
+    String contractAddrStr = parameters[0];
+    String methodStr = parameters[1];
+    String argsStr = parameters[2];
+    boolean isHex = Boolean.valueOf(parameters[3]);
+    long feeLimit = Long.valueOf(parameters[4]);
+    long callValue = Long.valueOf(parameters[5]);
+    if (argsStr.equalsIgnoreCase("#")) {
+      argsStr = "";
+    }
+
+    byte[] input = Hex.decode(AbiUtil.parseMethod(methodStr, argsStr, isHex));
+    byte[] contractAddress = StringTronUtil.decodeFromBase58Check(contractAddrStr);
+
+    return triggerContract(ower, contractAddress, callValue, input, feeLimit);
+  }
+
+  public static Contract.TriggerSmartContract triggerCallContract(byte[] address,
+                                                                  byte[] contractAddress,
+                                                                  long callValue, byte[] data) {
+    Contract.TriggerSmartContract.Builder builder = Contract.TriggerSmartContract.newBuilder();
+    builder.setOwnerAddress(ByteString.copyFrom(address));
+    builder.setContractAddress(ByteString.copyFrom(contractAddress));
+    builder.setData(ByteString.copyFrom(data));
+    builder.setCallValue(callValue);
+    return builder.build();
+  }
+
+  public static GrpcAPI.TransactionExtention triggerContract(byte[] owner, byte[] contractAddress, long callValue, byte[] data, long feeLimit)
+          throws IOException, CipherException, CancelException {
+    Contract.TriggerSmartContract triggerContract = triggerCallContract(owner, contractAddress,
+            callValue, data);
+
+    GrpcAPI.TransactionExtention transactionExtention = WalletApi.rpcCli.triggerContract(triggerContract);
+    if (transactionExtention == null || !transactionExtention.getResult().getResult()) {
+            System.out.println("RPC create call trx failed!");
+            System.out.println("Code = " + transactionExtention.getResult().getCode());
+            System.out
+                    .println("Message = " + transactionExtention.getResult().getMessage().toStringUtf8());
+      return null;
+    }
+
+    Protocol.Transaction transaction = transactionExtention.getTransaction();
+    if (transaction.getRetCount() != 0 &&
+            transactionExtention.getConstantResult(0) != null &&
+            transactionExtention.getResult() != null) {
+      byte[] result = transactionExtention.getConstantResult(0).toByteArray();
+
+      return transactionExtention;
+    }
+
+    GrpcAPI.TransactionExtention.Builder texBuilder = GrpcAPI.TransactionExtention.newBuilder();
+    Protocol.Transaction.Builder transBuilder = Protocol.Transaction.newBuilder();
+    Protocol.Transaction.raw.Builder rawBuilder = transactionExtention.getTransaction().getRawData()
+            .toBuilder();
+    rawBuilder.setFeeLimit(feeLimit);
+    transBuilder.setRawData(rawBuilder);
+    for (int i = 0; i < transactionExtention.getTransaction().getSignatureCount(); i++) {
+      ByteString s = transactionExtention.getTransaction().getSignature(i);
+      transBuilder.setSignature(i, s);
+    }
+    for (int i = 0; i < transactionExtention.getTransaction().getRetCount(); i++) {
+      Protocol.Transaction.Result r = transactionExtention.getTransaction().getRet(i);
+      transBuilder.setRet(i, r);
+    }
+    texBuilder.setTransaction(transBuilder);
+    texBuilder.setResult(transactionExtention.getResult());
+    texBuilder.setTxid(transactionExtention.getTxid());
+    transactionExtention = texBuilder.build();
+
+    return transactionExtention;
   }
 
   public boolean processTransactionExtention(GrpcAPI.TransactionExtention transactionExtention) {
@@ -858,25 +571,6 @@ public class WalletApiWrapper {
     transactionInfo.getContractResultList().forEach(result -> {
       rawBuilder1.append(Hex.toHexString(result.toByteArray()));
     });
-//        Function function = functionMap.get(functionName);
-//        List<com.centerprime.tronsdk.abi.datatypes.Type> output = null;
-//        StringBuilder outputBuilder = new StringBuilder();
-//        if (function != null) {
-//            output = FunctionReturnDecoder.decode(rawBuilder1.toString(), function.getOutputParameters());
-//            for (int i = 0; i < output.size(); i++) {
-//                if (output.get(i) instanceof Address) {
-//                    String hexTronAddress = ((Address) output.get(i)).toUint160().getValue()
-//                            .or(new BigInteger("410000000000000000000000000000000000000000", 16))
-//                            .toString(16);
-//                    outputBuilder.append(WalletApi.encode58Check(Hex.decode(hexTronAddress)));
-//                } else {
-//                    outputBuilder.append(output.get(i).getValue());
-//                }
-//                if (i != output.size() - 1) {
-//                    outputBuilder.append(",");
-//                }
-//            }
-//        }
     return transactionInfo;
   }
 
@@ -892,6 +586,17 @@ public class WalletApiWrapper {
     return transaction;
   }
 
+  public Protocol.Transaction signTransaction(Protocol.Transaction transaction, ECKey ecKey) {
+    if (transaction.getRawData().getTimestamp() == 0) {
+      transaction = TransactionUtils.setTimestamp(transaction);
+    }
+
+    System.out.println(
+            "Signed txid = " + ByteArray
+                    .toHexString(Sha256Hash.hash(transaction.getRawData().toByteArray())));
+    transaction = TransactionUtils.sign(transaction, ecKey);
+    return transaction;
+  }
 
 
 }
